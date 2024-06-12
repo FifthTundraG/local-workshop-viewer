@@ -1,3 +1,7 @@
+.env
+output.txt
+
+# === Python's template below! ===
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
