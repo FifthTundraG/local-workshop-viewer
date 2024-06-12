@@ -16,6 +16,16 @@ defaultSteamDir: dict[str, str] = {
     "Linux": "~/.steam/steam/"
 }
 
+def yesnoQuestion(question: str) -> bool:
+    yesnoInput = input(question+" [Y/n] ")
+    if yesnoInput.lower() == "y" or yesnoInput.lower() == "yes": # todo: can this be ternary easily?
+        return True
+    elif yesnoInput.lower() == "n" or yesnoInput.lower() == "no":
+        return False
+    else:
+        logging.error(f"\"{yesnoInput}\" is not a valid response.")
+        exit()
+
 def main() -> None:
     logging.basicConfig(format='[%(levelname)s] %(message)s')
 
@@ -42,7 +52,7 @@ def main() -> None:
     # Get the user's game ID
     GAME_ID = input("Game's AppID: ") # todo: make this required
     if GAME_ID == None or GAME_ID == "":
-        logging.critical("An input for Game ID is required to continue.")
+        logging.critical("An AppID is required to continue.")
         return
     GAME_ID = int(GAME_ID) #* i can't put this where the input is because we need to check if the input is blank and it will error out complaining that "" isn't a number when it's at definition
 
@@ -57,25 +67,13 @@ def main() -> None:
         return
 
     # Handle whether we should log to a file
-    logToFileInput = input("Would you like to log all addons to a file? Recommended if you have a large amount of addons. [Y/n] ")
-    if logToFileInput.lower() == "y": # todo: can this be ternary easily?
-        logOutput: bool = True
-    elif logToFileInput.lower() == "n":
-        logOutput: bool = False
-    else:
-        logging.error(f"\"{logToFileInput}\" is not a valid response.")
-        return
+    logOutput = yesnoQuestion("Would you like to log all addons to a file? Recommended if you have a large amount of addons.")
     
     # If output.txt already exists, inform the user and ask if they would like to overwrite
     if os.path.isfile("output.txt") and logOutput:
-        fileExistsWarning = input("The output.txt file alrady exists, overwrite it? [Y/n] ")
-        if fileExistsWarning.lower() == "y": # todo: can this be ternary easily?
-            pass
-        elif fileExistsWarning.lower() == "n":
+        fileExistsWarning = yesnoQuestion("The output.txt file alrady exists, overwrite it?")
+        if fileExistsWarning == False:
             print("Exiting...")
-            return
-        else:
-            logging.error(f"\"{fileExistsWarning}\" is not a valid response.")
             return
     
     # Make a request to Steam using the game ID to get the name of the game for logging purposes
@@ -94,7 +92,6 @@ def main() -> None:
         "itemcount": len(addonIDs)
     }
     for i in enumerate(addonIDs):
-        # todo: figure this out further
         fileDetailsParams[f"publishedfileids[{i[0]}]"] = i[1]
     fileDetails = requests.post(fileDetailsURL, data=fileDetailsParams)
     fileDetails.raise_for_status()
@@ -110,13 +107,13 @@ def main() -> None:
     f.write(f"{msg}\n")
     print(msg)
 
-    addonsWithErrors: list[str] = []
+    addonsWithErrors: dict[str, str] = {} # this is appended to when an error is encountered, format: {ugcid: errorcode}
     for i in fileDetails.json()["response"]["publishedfiledetails"]:
         if i["result"] != 1: # 1=OK, any other number is an error
             msg = f"Error while processing addon with ID {i["publishedfileid"]}. Steam error code {i["result"]}"
             print(msg)
             if logOutput: f.write(f"{msg}\n")
-            addonsWithErrors.append(i["publishedfileid"])
+            addonsWithErrors[i["publishedfileid"]] = i["result"]
             continue
         msg = f"{i["title"]} ({i["publishedfileid"]})"
         print(msg)
@@ -126,7 +123,8 @@ def main() -> None:
     if logOutput: print("Contents have been logged to output.txt.")
     if len(addonsWithErrors) > 0:
         print("There were errors when requesting the following addons:")
-        print(addonsWithErrors)
+        for i in enumerate(addonsWithErrors):
+            print(f"  {i[1]} - error code {addonsWithErrors[i[1]]}")
     leaving = input("Press any key to exit... ")
 
 if __name__ == "__main__":
