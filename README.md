@@ -1,5 +1,5 @@
-# img-to-turtle
-Shows every addon installed locally on the users machine for a specified game.
+# Local Workshop Viewer
+Shows every Steam Workshop addon installed locally on the user's machine for a specified game.
 
 Requires the requests, dotenv, and vdf libraries, install them with the following command:
 `pip install -r requirements.txt`
