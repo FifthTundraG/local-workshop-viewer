@@ -40,7 +40,7 @@ def main() -> None:
     steamDir = libraryfolders["libraryfolders"][librarySelection]["path"]
 
     # Get the user's game ID
-    GAME_ID = input("Game ID: ") # todo: make this required
+    GAME_ID = input("Game's AppID: ") # todo: make this required
     if GAME_ID == None or GAME_ID == "":
         logging.critical("An input for Game ID is required to continue.")
         return
