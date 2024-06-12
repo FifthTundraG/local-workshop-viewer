@@ -1,4 +1,4 @@
-# img-to-turtle
+# Local Workshop Viewer
 Shows every Steam Workshop addon installed locally on the user's machine for a specified game.
 
 Requires the requests library, install it with
