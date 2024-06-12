@@ -1,5 +1,5 @@
 # img-to-turtle
-Shows every addon installed locally on the users machine for a specified game.
+Shows every Steam Workshop addon installed locally on the user's machine for a specified game.
 
 Requires the requests library, install it with
 `python3 -m pip install --upgrade requests`.
